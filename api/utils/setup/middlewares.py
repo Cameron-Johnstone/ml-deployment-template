@@ -7,6 +7,7 @@ from starlette.responses import PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from api.utils import get_logger
+from api.utils.setup.config import API_KEY
 
 logger = get_logger()
 
@@ -26,7 +27,7 @@ class ApiTokenMiddleware(BaseHTTPMiddleware):
     dipatch():
         Overridden from BaseHTTPMiddleware. Encapsulates the primary functionality for this middleware.
     """
-    API_KEY: str = os.getenv("API_TOKEN")
+    API_KEY: str = API_KEY
     excluded_paths: list[str] = ['health', 'deployment_color']
 
     async def dispatch(self, request: Request, call_next):
