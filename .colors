@@ -1,0 +1,2 @@
+export DEPLOYED_COLOR="blue"
+export IDLE_COLOR="green"

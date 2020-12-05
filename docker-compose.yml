@@ -15,10 +15,9 @@ services:
       - 56733:56733
     volumes:
       - ${LOCAL_REPO_PATH}:/app
+    networks:
+      - deployed-containers
     entrypoint: tail -f /dev/null
-#      uvicorn --host 0.0.0.0 --port 56733 app:app
-#      jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
-
 
   model-unittest:
     container_name: model-unittest
@@ -43,4 +42,35 @@ services:
     restart: always
     expose:
       - 56733
+    networks:
+      - deployed-containers
     entrypoint: uvicorn --host 0.0.0.0 --port 56733 app:app
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.myservice.loadbalancer.responseforwarding.flushinterval=-1
+      - traefik.http.services.myservice.loadbalancer.server.port=56733
+      - traefik.http.services.myservice.loadbalancer.healthcheck.path=/health
+      - traefik.http.services.myservice.loadbalancer.healthcheck.port=56733
+      - traefik.http.services.myservice.loadbalancer.healthcheck.timeout=2s
+      - traefik.http.services.myservice.loadbalancer.healthcheck.interval=60s
+
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: traefik:v2.3
+    command:
+      - --entrypoints.web.address=:80
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.defaultRule=Method(`GET`, `POST`)
+      - --api.insecure=true
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - deployed-containers
+
+networks:
+  deployed-containers:
+    external: true
