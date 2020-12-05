@@ -1,0 +1,31 @@
+{
+  "valid_requests": [
+    {
+      "num_responses": 5
+    },
+    {
+      "num_responses": 1
+    },
+    {
+      "num_responses": 99
+    }
+  ],
+  "invalid_requests": {
+    "negative_num_responses":
+    {
+      "num_responses": -50
+    },
+    "zero_num_responses":
+    {
+      "num_responses": 0
+    },
+    "more_than_one_hundred_num_responses":
+    {
+      "num_responses": 1000
+    },
+    "string_num_responses":
+    {
+      "num_responses": "10"
+    }
+  }
+}
