@@ -1,0 +1,2 @@
+# Line endings for bash scripts is always LF
+*.sh text eol=lf

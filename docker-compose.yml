@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  model-dev:
+    container_name: model-dev
+    image: template-project_development:1.0
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      - API_TOKEN=${API_TOKEN}
+    ports:
+      - 5000:5000
+      - 56733:56733
+    volumes:
+      - ${LOCAL_REPO_PATH}:/app
+    entrypoint: tail -f /dev/null
+#      uvicorn --host 0.0.0.0 --port 56733 app:app
+#      jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
+
+
+  model-unittest:
+    container_name: model-unittest
+    image: template-project_unit-testing:1.0
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: test-deploy
+    environment:
+      - API_TOKEN=${API_TOKEN}
+    entrypoint: python3 -m pytest
+
+  model:
+    image: template-project:1.0
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: test-deploy
+    environment:
+      - API_TOKEN=${API_TOKEN}
+      - DEPLOYMENT_COLOR=${IDLE_COLOR}
+    restart: always
+    expose:
+      - 56733
+    entrypoint: uvicorn --host 0.0.0.0 --port 56733 app:app
