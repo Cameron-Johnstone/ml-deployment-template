@@ -7,80 +7,26 @@ from starlette.status import HTTP_403_FORBIDDEN
 from starlette.responses import PlainTextResponse
 
 from api.utils.http_data_models import DummyRequest, DummyResponse
-from api.utils import get_logger
+from api.utils import get_logger, setup
 
 app = FastAPI()
+setup(app)
 
-# Set API Key Authentication Related Variables
-API_KEY = os.getenv("API_TOKEN")
-
-# Setup logger
 logger = get_logger()
-
 logger.info("API is up and now listening...")
-
-
-@app.middleware("http")
-async def check_api_key(request: Request, call_next):
-    """
-    This is a FastAPI ASGI middleware function (https://fastapi.tiangolo.com/tutorial/middleware/)
-    that checks if the API Key in the request is valid.
-
-    If there is no API Key provided, a plain text response "No API Token Provided" with HTTP status 403 is returned
-
-    If the API Key in the request is invalid, a plain text response "Wrong API Token" with HTTP status 403 is returned
-
-    If the API Key in the response is correct, this function gets the response from the path operation function and
-    returns it as-is.
-
-    :param request: represents the
-    :param call_next: a callable, the path operation function the request was originally aiming at
-
-    :return: starlette.PlainTextResponse with HTTP status code 403 in case of error, otherwise
-                response from the path operation function.
-    """
-    logger.info("Running API token based authentication")
-
-    if request.url.path.strip("/") not in ['health', 'deployment_color']:
-        supplied_api_key = request.headers.get("x-api-key")
-        
-        if supplied_api_key is None:
-            logger.warning("No API token provided")
-            return PlainTextResponse(
-                "No API Token Provided",
-                status_code=HTTP_403_FORBIDDEN
-            )
-        elif not supplied_api_key == API_KEY:
-            logger.warning("Wrong API token provided.")
-            return PlainTextResponse(
-                "Wrong API Token",
-                status_code=HTTP_403_FORBIDDEN
-            )
-        else:
-            logger.info("API token verified!")
-            
-    start_time = time.time()
-
-    response = await(call_next(request))
-
-    process_time = (time.time() - start_time) * 1000
-    formatted_process_time = '{0:.2f}'.format(process_time)
-    logger.info(f"Request processed in {formatted_process_time}ms ")
-
-    return response
 
 
 @app.get('/deployment_color/', status_code=200, response_model=str)
 def deployment_color_endpoint():
     """
-    This endpoint is used to check the health of the API by monitoring and alerting services.
+    This endpoint is used to check the color of the deployment.
     """
     return_message = ""
     
     deployment_color = os.getenv("DEPLOYMENT_COLOR")
     
     if deployment_color is None:
-        logger.debug("Not a colored deployment.")
+        logger.debug("Received a request for the deployment color, but this is not a colored deployment.")
         return_message = "Not a colored deployment."
     else:
         return_message = deployment_color
@@ -91,7 +37,7 @@ def deployment_color_endpoint():
 
 
 @app.get('/health/', status_code=200, response_model=str)
-def health_endpoint():
+def health():
     """
     This endpoint is used to check the health of the API by monitoring and alerting services.
     """
@@ -100,23 +46,23 @@ def health_endpoint():
     return "API health ok."
 
 
-@app.get('/dummy/', status_code=200, response_model=str)
-def dummy_get_endpoint():
+@app.get('/api_token_check/', status_code=200, response_model=str)
+def api_token_check():
     """
     The FastAPI path operation function that is triggered when a GET request to the
     endpoint `/dummy` is made.
 
-    This is just a dummy endpoint. It doesn't do anything except for returning a line of text.
+    This endpoint doesn't do anything except for returning a line of text. But it requires the API Token.
 
-    It can be used to test that the app is up and the connection is working.
+    It can be used to test that the API Token in the request is correct.
     """
     logger.info("Processed GET request.")
 
-    return "API Is Accessible."
+    return "API Token is correct."
 
 
 @app.post('/dummy/', status_code=200, response_model=Union[DummyResponse, str])
-async def dummy_post_endpoint(request: DummyRequest, response: Response):
+async def dummy(request: DummyRequest, response: Response):
     """
     The FastAPI path operation function that is triggered when a POST request to the
     endpoint `/dummy` is made.
@@ -182,7 +128,10 @@ if __name__ == "__main__":
 
     response = client.post(
         "/dummy/",
-        headers={"x-api-key": os.getenv("API_TOKEN"), "Content-Type": "application/json"},
+        headers={
+            "x-api-key": os.getenv("API_TOKEN"), 
+            "Content-Type": "application/json"
+        },
         json=post_body
     )
 

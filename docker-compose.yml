@@ -10,6 +10,8 @@ services:
       target: dev
     environment:
       - API_TOKEN=${API_TOKEN}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     ports:
       - 5000:5000
       - 56733:56733
@@ -18,6 +20,8 @@ services:
     networks:
       - deployed-containers
     entrypoint: tail -f /dev/null
+#     uvicorn --host 0.0.0.0 --port 56733 app:app
+#     jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
   model-unittest:
     container_name: model-unittest
@@ -28,6 +32,8 @@ services:
       target: test-deploy
     environment:
       - API_TOKEN=${API_TOKEN}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     entrypoint: python3 -m pytest
 
   model:
@@ -39,6 +45,8 @@ services:
     environment:
       - API_TOKEN=${API_TOKEN}
       - DEPLOYMENT_COLOR=${IDLE_COLOR}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     restart: always
     expose:
       - 56733
