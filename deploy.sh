@@ -17,7 +17,7 @@ docker-compose build --pull model
 docker-compose -p $IDLE_COLOR up -d --scale model=$REPLICAS --force-recreate model
 
 # Bring down old containers once new ones are working
-while [ $(curl -s --location --request GET 'http://localhost/deployment_color' | tr -d \") != $IDLE_COLOR ]; do :; done
+while [[ $(curl -s --location --request GET 'http://localhost/deployment_color' | tr -d \") != $IDLE_COLOR ]]; do :; done
 docker-compose -p $DEPLOYED_COLOR down
 
 # Update the .colors config
