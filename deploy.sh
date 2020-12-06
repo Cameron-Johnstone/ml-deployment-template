@@ -4,9 +4,8 @@ if [[ "${DOCKER_NETWORK_ID}" == "" ]]; then
     docker network create deployed-containers;
     docker-compose up -d reverse-proxy;
     touch ./.colors;
-    echo "" >> .colors;
     echo -e "export DEPLOYED_COLOR=blue" > .colors;
-    echo -e "export IDLE_COLOR=green" > .colors;
+    echo -e "export IDLE_COLOR=green\n" >> .colors;
 fi
 
 # Get the latest colors config
@@ -22,9 +21,8 @@ while [ $(curl -s --location --request GET 'http://localhost/deployment_color' |
 docker-compose -p $DEPLOYED_COLOR down
 
 # Update the .colors config
-echo "" >> .colors
 echo -e "export DEPLOYED_COLOR="${IDLE_COLOR} > .colors
-echo -e "export IDLE_COLOR="${DEPLOYED_COLOR} > .colors
+echo -e "export IDLE_COLOR="${DEPLOYED_COLOR} >> .colors
 
 # Prune unused images/layers (from old deployment)
 docker image prune -f
