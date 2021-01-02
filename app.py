@@ -7,13 +7,20 @@ from starlette.status import HTTP_403_FORBIDDEN
 from starlette.responses import PlainTextResponse
 
 from api.utils.http_data_models import DummyRequest, DummyResponse
-from api.utils import get_logger, setup
-
-app = FastAPI()
-setup(app)
+from api.utils.http_data_models import SentenceComparatorRequest, SentenceComparatorResponse
+from api.utils import get_logger
+from api.utils.setup import setup_api, setup_resources
+from model import SentenceComparator
 
 logger = get_logger()
-logger.info("API is up and now listening...")
+
+sentence_transformer = setup_resources()
+sentence_comparator = SentenceComparator(sentence_transformer)
+logger.info("Model resources are loaded and initialized...")
+
+app = FastAPI()
+setup_api(app)
+logger.info("API is now up and listening...")
 
 
 @app.get('/deployment_color/', status_code=200, response_model=str)
@@ -49,12 +56,7 @@ def health():
 @app.get('/api_token_check/', status_code=200, response_model=str)
 def api_token_check():
     """
-    The FastAPI path operation function that is triggered when a GET request to the
-    endpoint `/dummy` is made.
-
-    This endpoint doesn't do anything except for returning a line of text. But it requires the API Token.
-
-    It can be used to test that the API Token in the request is correct.
+    This endpoint is used to test that the API Token in the request is correct.
     """
     logger.info("Processed GET request.")
 
@@ -64,10 +66,7 @@ def api_token_check():
 @app.post('/dummy/', status_code=200, response_model=Union[DummyResponse, str])
 async def dummy(request: DummyRequest, response: Response):
     """
-    The FastAPI path operation function that is triggered when a POST request to the
-    endpoint `/dummy` is made.
-
-    Request must contain a JSON body like this:
+    Request JSON body should look like this:
 
     {
         "num_responses" : 4
@@ -93,15 +92,15 @@ async def dummy(request: DummyRequest, response: Response):
     response_body = {}
     error_message = ""
 
-    logger.info("Parsing received POST request and extracting data ...")
+    logger.info("Parsing received POST request and extracting data...")
     num_responses = request.num_responses
 
-    logger.info("Performing validation checks on input data ...")
+    logger.info("Performing validation checks on input data...")
     if not 0 < num_responses < 100:  # Note how you don't need to perform type validations; FastAPI does it for you
         error_message = f"Invalid num_responses value {num_responses}. Must be between 0 and 100 (not inclusive)."
     else:
-        logger.info("Validation checks passed.")
-        logger.info("Computing responses ...")
+        logger.info("Validation checks passed")
+        logger.info("Computing response...")
 
         response_body = {
             "response_values": [x for x in range(1, num_responses+1)],
@@ -113,6 +112,43 @@ async def dummy(request: DummyRequest, response: Response):
         logger.warning(error_message)
         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         response_body = error_message
+
+    return response_body
+
+
+@app.post('/sentence_compare/', status_code=200, response_model=Union[SentenceComparatorResponse, str])
+async def sentence_compare(request: SentenceComparatorRequest, response: Response):
+    """
+    Request JSON body should look like this:
+
+    {
+        "sentence_1" : "This is the first sentence.",
+        "sentence_2": "This is the second sentence"
+    }
+
+    :return: Response Sample:
+                {
+                    "sentence_similarity_score": "0.6019590497016907"
+                }
+
+            In normal circumstances, a JSON like the above is returned with HTTP status 200.
+                `"sentence_similarity_score"`will contain a stringified floating point number
+
+    :rtype: dict (conforming to DummyResponse Pydantic model), or str
+    """
+
+    response_body = {}
+
+    logger.info("Parsing received POST request and extracting data...")
+    sentence_1 = request.sentence_1
+    sentence_2 = request.sentence_2
+
+    logger.info("Computing response...")
+    sentence_similarity_score = sentence_comparator.get_similarity(sentence_1, sentence_2)
+    response_body = {
+        "sentence_similarity_score": str(sentence_similarity_score)
+    }
+    logger.info("Processed POST request")
 
     return response_body
 

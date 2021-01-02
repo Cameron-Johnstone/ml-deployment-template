@@ -22,3 +22,18 @@ class DummyResponse(BaseModel):
     """
     response_values: List[int]
     message: str
+
+
+class SentenceComparatorRequest(BaseModel):
+    """
+    This model represents the JSON body of POST request to endpoint `/sentence_compare`
+    """
+    sentence_1: str
+    sentence_2: str
+
+
+class SentenceComparatorResponse(BaseModel):
+    """
+    This model represents the JSON body of valid responses to POST requests made to the endpoint `/sentence_compare`
+    """
+    sentence_similarity_score: str
