@@ -14,13 +14,13 @@ services:
       - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     ports:
       - 5000:5000
-      - 56733:56733
+      - 80:80
     volumes:
       - ${LOCAL_REPO_PATH}:/app
     networks:
       - deployed-containers
     entrypoint: tail -f /dev/null
-#     uvicorn --host 0.0.0.0 --port 56733 app:app
+#     uvicorn --host 0.0.0.0 --port 80 app:app
 #     jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
   model-unittest:
