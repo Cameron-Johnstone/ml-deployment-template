@@ -1,52 +1,39 @@
 version: '3.8'
 
+
+x-model: &model-base
+  build:
+    context: ./
+    dockerfile: Dockerfile
+  environment:
+    - API_TOKEN=${API_TOKEN}
+    - SENTRY_DSN=${SENTRY_DSN}
+    - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
+    - DEPLOYMENT_COLOR=${IDLE_COLOR}
+
 services:
   model-dev:
+    <<: *model-base
     container_name: model-dev
     image: template-project_development:1.0
-    build:
-      context: ./
-      dockerfile: Dockerfile
-      target: dev
-    environment:
-      - API_TOKEN=${API_TOKEN}
-      - SENTRY_DSN=${SENTRY_DSN}
-      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     ports:
       - 5000:5000
       - 80:80
     volumes:
       - ${LOCAL_REPO_PATH}:/app
-    networks:
-      - deployed-containers
     entrypoint: tail -f /dev/null
 #     uvicorn --host 0.0.0.0 --port 80 app:app
 #     jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
   model-unittest:
+    <<: *model-base
     container_name: model-unittest
     image: template-project_unit-testing:1.0
-    build:
-      context: ./
-      dockerfile: Dockerfile
-      target: test-deploy
-    environment:
-      - API_TOKEN=${API_TOKEN}
-      - SENTRY_DSN=${SENTRY_DSN}
-      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     entrypoint: python3 -m pytest
 
   model:
+    <<: *model-base
     image: template-project:1.0
-    build:
-      context: ./
-      dockerfile: Dockerfile
-      target: test-deploy
-    environment:
-      - API_TOKEN=${API_TOKEN}
-      - DEPLOYMENT_COLOR=${IDLE_COLOR}
-      - SENTRY_DSN=${SENTRY_DSN}
-      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT}
     restart: always
     expose:
       - 56733
