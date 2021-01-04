@@ -22,8 +22,6 @@ services:
     volumes:
       - ${LOCAL_REPO_PATH}:/app
     entrypoint: tail -f /dev/null
-#     uvicorn --host 0.0.0.0 --port 80 app:app
-#     jupyter notebook --ip 0.0.0.0 --port 5000 --allow-root --NotebookApp.token='' --NotebookApp.password=''
 
   model-unittest:
     <<: *model-base
