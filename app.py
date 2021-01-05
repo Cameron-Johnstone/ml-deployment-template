@@ -43,16 +43,6 @@ def deployment_color_endpoint():
     return return_message
 
 
-@app.get('/health/', status_code=200, response_model=str)
-def health():
-    """
-    This endpoint is used to check the health of the API by monitoring and alerting services.
-    """
-    logger.debug("Processed health-check request.")
-
-    return "API health ok."
-
-
 @app.get('/api_token_check/', status_code=200, response_model=str)
 def api_token_check():
     """
@@ -151,6 +141,16 @@ async def sentence_compare(request: SentenceComparatorRequest, response: Respons
     logger.info("Processed POST request")
 
     return response_body
+
+
+@app.get('/health/', status_code=200, response_model=str)
+def health():
+    """
+    This endpoint is used to check the health of the API by monitoring and alerting services.
+    """
+    logger.debug("Processed health-check request.")
+
+    return "API health ok."
 
 
 if __name__ == "__main__":
