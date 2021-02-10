@@ -2,7 +2,7 @@
 
 Say you've worked hard to build and finetune a model. Maybe you've done this for a Kaggle competition. Or for your own protfolio. Now you want to make it available for everyone's use. But you're not entirely sure how to engineer your model into an API. **Well, this template project is meant to solve that problem for you! It is built for anyone who wants to quickly and easily deploy a machine learning model as an API.**
 
-It's specially designed with Docker so that your development and deployment environments are identical. It also allows for zero-downtime re-deployments, which makes the process of continuing development on your deployed model very smooth. Also, the fact that everything is Docker-based means you can easily translate this into a CI/CD pipeline as well.
+It's specially designed with Docker so that your development and deployment environments are identical. It also allows for zero-downtime re-deployments using Taefik. This makes the process of continuously updating the code for your deployed model very smooth. Also, the fact that everything is Docker-based means you can easily translate this into the CI/CD pipeline of your choice (the [`docker-compose.yml` file](https://github.com/RishabhMalviya/ml-deployment-template/blob/master/docker-compose.yml) has configurations for two basic CI/CD stages - testing and deployment).
 
 The zero-downtime deployment infrastructure available in this project is explained in [this Medium post](https://medium.com/better-programming/create-a-zero-downtime-deployment-of-your-machine-learning-api-6486cb6394c3).
 
@@ -13,7 +13,7 @@ I will soon be making a video demonstrating how to use this template project. Bu
 
 ### Adding Your Code
 1. Inject your ML code in the `./model` directory. By default, the directory comes pre-loaded with code for sentence comparison using a BERT sentence encoder.
-2. Specify your endpoints in `app.py`. The default sentence comparison functionality is exposed from [this path definition function](https://github.com/RishabhMalviya/ml-deployment-template/blob/master/app.py#L109) in the `app.py` file. It also contains [a dummy endpoint](https://github.com/RishabhMalviya/ml-deployment-template/blob/master/app.py#L56) for reference.
+2. Specify your endpoints in `app.py`. The default sentence comparison functionality is exposed from [this endpoint](https://github.com/RishabhMalviya/ml-deployment-template/blob/master/app.py#L109) in the `app.py` file. It also contains [a dummy endpoint](https://github.com/RishabhMalviya/ml-deployment-template/blob/master/app.py#L56) for quick testing.
 3. Optionally, write the corresponding test cases in the `./api/tests/test_app.py`.
 
 ### Deploying to Your Server
